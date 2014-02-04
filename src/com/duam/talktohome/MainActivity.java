@@ -180,7 +180,7 @@ public class MainActivity extends Activity
 		
 		Button btnUpload = new Button(this);
 		btnUpload.setText("Subir");
-		btnUpload.setOnClickListener(new View.OnClickListener()
+		btnUpload.setOnClickListener(new OnClickListener()
 		{			
 			@Override
 			public void onClick(View v)
