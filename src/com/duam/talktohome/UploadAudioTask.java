@@ -3,6 +3,8 @@ package com.duam.talktohome;
 import static com.duam.talktohome.ConstantesTalkToHome.SERVER_HOST;
 import static com.duam.talktohome.ConstantesTalkToHome.SERVER_PORT;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -19,13 +21,31 @@ public class UploadAudioTask extends AsyncTask<String, Void, Void>
 	{
 		try
 		{
-			byte[] data = IOUtil.readFile(params[0]);
+			File file = new File(params[0]);
+			String fileLength = String.valueOf(file.length());
+			
+			byte[] bytes = new byte[1024];
+			
+			FileInputStream fis = new FileInputStream(file);
 			
 			DatagramSocket clientSocket = new DatagramSocket();
-			InetAddress IPAddress = InetAddress.getByName(SERVER_HOST);
+			InetAddress address = InetAddress.getByName(SERVER_HOST);
+
+			// inform file size
+			clientSocket.send(new DatagramPacket(fileLength.getBytes(), fileLength.getBytes().length, address, SERVER_PORT));
 			
-			DatagramPacket sendPacket = new DatagramPacket(data, data.length, IPAddress, SERVER_PORT);
-			clientSocket.send(sendPacket);			
+			byte[] response = new byte[256];
+			
+			while (fis.read(bytes) >= 0)
+			{
+				DatagramPacket sendPacket = new DatagramPacket(bytes, bytes.length, address, SERVER_PORT);
+				clientSocket.send(sendPacket);
+
+				DatagramPacket responsePacket = new DatagramPacket(response, response.length, address, SERVER_PORT);
+				clientSocket.receive(responsePacket);
+			}
+			
+			fis.close();
 			clientSocket.close();
 		}
 		catch (Exception ex)
