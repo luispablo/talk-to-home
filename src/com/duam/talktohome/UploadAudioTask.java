@@ -19,6 +19,8 @@ public class UploadAudioTask extends AsyncTask<String, Void, Void>
 	@Override
 	protected Void doInBackground(String... params)
 	{
+		Log.d(TAG, "About to upload file...");
+		
 		try
 		{
 			File file = new File(params[0]);
@@ -33,6 +35,7 @@ public class UploadAudioTask extends AsyncTask<String, Void, Void>
 
 			// inform file size
 			clientSocket.send(new DatagramPacket(fileLength.getBytes(), fileLength.getBytes().length, address, SERVER_PORT));
+			Log.d(TAG, "File length sent");
 			
 			byte[] response = new byte[256];
 			
@@ -44,6 +47,7 @@ public class UploadAudioTask extends AsyncTask<String, Void, Void>
 				DatagramPacket responsePacket = new DatagramPacket(response, response.length, address, SERVER_PORT);
 				clientSocket.receive(responsePacket);
 			}
+			Log.d(TAG, "File content sent");
 			
 			fis.close();
 			clientSocket.close();
