@@ -3,6 +3,6 @@
 
     <string name="app_name">Talk 2 Home</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="rec">REC (release when done)</string>
 
 </resources>
