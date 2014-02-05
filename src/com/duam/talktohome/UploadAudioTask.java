@@ -8,16 +8,17 @@ import java.io.FileInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class UploadAudioTask extends AsyncTask<String, Void, Void>
+public class UploadAudioTask extends AsyncTask<String, Void, Exception>
 {
 	private static final String TAG = UploadAudioTask.class.getName();
 
 	@Override
-	protected Void doInBackground(String... params)
+	protected Exception doInBackground(String... params)
 	{
 		Log.d(TAG, "About to upload file...");
 		
@@ -31,6 +32,7 @@ public class UploadAudioTask extends AsyncTask<String, Void, Void>
 			FileInputStream fis = new FileInputStream(file);
 			
 			DatagramSocket clientSocket = new DatagramSocket();
+			clientSocket.setSoTimeout(5000);
 			InetAddress address = InetAddress.getByName(SERVER_HOST);
 
 			// inform file size
@@ -51,6 +53,10 @@ public class UploadAudioTask extends AsyncTask<String, Void, Void>
 			
 			fis.close();
 			clientSocket.close();
+		}
+		catch (SocketTimeoutException ex)
+		{
+			return ex;
 		}
 		catch (Exception ex)
 		{
