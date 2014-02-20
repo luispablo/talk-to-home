@@ -4,13 +4,14 @@ import static com.duam.talktohome.ConstantesTalkToHome.AUX_FILE_NAME;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.DatagramSocket;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
-//import android.media.MediaPlayer;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -27,7 +28,6 @@ public class MainActivity extends Activity
 	private static String fileName = Environment.getExternalStorageDirectory().getAbsolutePath() +"/"+ AUX_FILE_NAME;
 
 	private MediaRecorder recorder = null;
-//	private MediaPlayer player = null;
 
 	@Override
 	public void onCreate(Bundle bundle)
@@ -76,54 +76,73 @@ public class MainActivity extends Activity
 				pd.show();
 			}
 			@Override
-			protected void onPostExecute(Exception error)
+			protected void onPostExecute(DatagramSocket socket)
 			{
 				File file = new File(fileName);
 		        file.delete();
 		        pd.dismiss();
 		        
-				if (error != null)
-				{
-					new AlertDialog.Builder(MainActivity.this).setTitle("Error al enviar mensaje").setMessage(error.getMessage())
-					.setNeutralButton("Lo entiendo", new DialogInterface.OnClickListener() 
-					{
-						@Override
-						public void onClick(DialogInterface dialog, int which) 
-						{
-						}
-					}).show();
-				}
-				else
-				{
+//				if (error != null)
+//				{
+//					new AlertDialog.Builder(MainActivity.this).setTitle("Error al enviar mensaje").setMessage(error.getMessage())
+//					.setNeutralButton("Lo entiendo", new DialogInterface.OnClickListener() 
+//					{
+//						@Override
+//						public void onClick(DialogInterface dialog, int which) 
+//						{
+//						}
+//					}).show();
+//				}
+//				else
+//				{
 					Toast toast = Toast.makeText(MainActivity.this, "Mensaje enviado con éxito", Toast.LENGTH_LONG);
 					toast.show();
-				}
+//				}
+				
+				downloadPlayDelete(socket);
 			}
 		};
 		task.execute(fileName);
 	}
 	
-//	private void startPlaying()
-//	{
-//		player = new MediaPlayer();
-//		try
-//		{
-//			player.setDataSource(fileName);
-//			player.prepare();
-//			player.start();
-//		}
-//		catch (IOException e)
-//		{
-//			Log.e(TAG, "prepare() failed");
-//		}
-//	}
-//
-//	private void stopPlaying()
-//	{
-//		player.release();
-//		player = null;
-//	}
+	private void downloadPlayDelete(DatagramSocket socket)
+	{
+		final ProgressDialog pd = ProgressDialog.show(this, "Descargando respuesta", "Aguarde un momento, por favor");
+		
+		DownloadAudioTask task = new DownloadAudioTask()
+		{
+			@Override
+			protected void onPreExecute() 
+			{
+				pd.show();
+			}
+			
+			@Override
+			protected void onPostExecute(Void result) 
+			{
+				pd.dismiss();
 
+				Log.d(TAG, "About to play file");
+				MediaPlayer mp = new MediaPlayer();
+
+				try 
+	            {
+					mp.setDataSource(fileName);
+		            mp.prepare();
+		            mp.start();
+				} 
+	            catch (Exception e) 
+				{
+	            	Log.e(TAG, "Error playing audio", e);
+				}
+				
+				File file = new File(fileName);
+				file.delete();
+			}			
+		};
+		task.execute(socket);
+	}
+	
 	private void startRecording()
 	{
 		recorder = new MediaRecorder();
@@ -151,78 +170,4 @@ public class MainActivity extends Activity
 		recorder = null;
 	}
 
-//	class RecordButton extends Button
-//	{
-//		boolean mStartRecording = true;
-//
-//		OnClickListener clicker = new OnClickListener()
-//		{
-//			public void onClick(View v)
-//			{
-//				onRecord(mStartRecording);
-//				if (mStartRecording)
-//				{
-//					setText("Stop recording");
-//				}
-//				else
-//				{
-//					setText("Start recording");
-//				}
-//				mStartRecording = !mStartRecording;
-//			}
-//		};
-//
-//		public RecordButton(Context ctx)
-//		{
-//			super(ctx);
-//			setText("Start recording");
-//			setOnClickListener(clicker);
-//		}
-//	}
-//
-//	class PlayButton extends Button
-//	{
-//		boolean mStartPlaying = true;
-//
-//		OnClickListener clicker = new OnClickListener()
-//		{
-//			public void onClick(View v)
-//			{
-//				onPlay(mStartPlaying);
-//				if (mStartPlaying)
-//				{
-//					setText("Stop playing");
-//				}
-//				else
-//				{
-//					setText("Start playing");
-//				}
-//				mStartPlaying = !mStartPlaying;
-//			}
-//		};
-//
-//		public PlayButton(Context ctx)
-//		{
-//			super(ctx);
-//			setText("Start playing");
-//			setOnClickListener(clicker);
-//		}
-//	}
-//
-//	@Override
-//	public void onPause()
-//	{
-//		super.onPause();
-//		if (recorder != null)
-//		{
-//			recorder.release();
-//			recorder = null;
-//		}
-//
-//		if (player != null)
-//		{
-//			player.release();
-//			player = null;
-//		}
-//	}
 }
